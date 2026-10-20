@@ -1,0 +1,10 @@
+# dsh-git - loader patch.
+#
+# One insert: the plugin row that owns both halves. The host half serves the
+# read-only git API on the profile's own HTTP surface; the client half mounts
+# the composer chip, the header button and the right-sidebar tab. Nothing here
+# overrides an existing row, so the patch composes with any user-side layer.
+
+- insert:
+    - id: dsh-git
+      name: dsh-git
