@@ -73,7 +73,8 @@ All traffic goes through `POST /plugins/dsh-git/api/<method>` with a JSON body a
 
 ## Safety
 
-- `reset --hard`, `revert` and `discard` are destructive; they are only reachable from explicit clicks in the panel.
+- `reset --hard`, `revert` and `discard` are destructive; they are only reachable from explicit clicks in the panel. A revert that hits a conflict is rolled back with `git revert --abort`, so the working tree is never left mid-merge.
+- Discarding an untracked file is refused instead of deleting it, and untracked files never show the discard action in the panel.
 - Pathspecs and branch names are validated (no leading `-`, no whitespace or `..` in branches) and passed after `--`.
 - The plugin never runs a shell, never prompts for credentials (`GIT_TERMINAL_PROMPT=0`), and never reads anything outside the session working directory.
 
