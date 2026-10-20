@@ -1,126 +1,95 @@
 # dsh-git
 
-Git, visible where you are writing code — a [DeepSeek Harness](https://github.com/deepseek-ai) plugin.
+Git in the [DeepSeek Harness](https://github.com/deepseek-ai) composer and sidebar: a repo/branch chip, a header button, and a split Git panel with staging, commit, history and diffs.
 
-Three seats, one read-only git API:
+## What it adds
 
-- **A chip under the composer** — `repo / branch`, a dirty dot, and ↑ahead/↓behind drift, for the workspace the current session runs in.
-- **A Git button in the conversation header** — same repo state, one click away.
-- **A right-sidebar tab** — the change list with per-file patches, and the commit history with per-commit patches.
-
-Both entry points open the same tab, so the chip and the header button are interchangeable.
-
----
-
-## What it looks like
+**1. Branch chip in the composer.** A small pill sits in the composer trailing cluster, left of the model picker and the session-stats control:
 
 ```
-  weidows / main ● ↑3          ← chip under the composer (click = open tab)
+main-repo / feature/login   ↑2
 ```
 
+It shows the repository name, the current branch, ahead/behind markers, and a dirty dot. Click it to open the Git panel.
+
+**2. Git button in the conversation header.** The same action from the top-right utilities row of an open conversation.
+
+**3. A split Git panel in the sidebar.**
+
 ```
-  ┌─ right sidebar ──────────────────────────────┐
-  │ weidows   main ↑3          [ 改动 69 | 历史 ] │
-  │ ──────────────────────────────────────────── │
-  │ M lib/client.js              +42 −7          │
-  │ A README.md                  +120            │
-  │ R old-name.js → new-name.js                  │
-  │ ? notes.txt                  untracked       │
-  │ ──────────────────────────────────────────── │
-  │  @@ -12,6 +12,9 @@                           │
-  │   for (const file of files) {                │
-  │ +   rows.push(row(file))                     │
-  │   }                                          │
-  └──────────────────────────────────────────────┘
++----------------------+----------------------+
+| changes + staging    | history              |
+|  staged / unstaged   |  branch + filter     |
+|  [ AI ] [ ] [commit] |  expandable commits  |
++----------------------+----------------------+
+| diff                                       |
++--------------------------------------------+
 ```
+
+- **Top-left**: staged and unstaged files. Stage/unstage a single file or everything, discard tracked changes, write a commit message, and generate one with AI (uses the Harness default model, and reports a clear error when no model is configured). Ctrl/Cmd+Enter commits.
+- **Top-right**: commit history with a text filter, expandable rows that list the files of the commit, and a right-click menu (copy hash, `reset --soft/mixed/hard`, `revert`).
+- **Bottom**: the diff of whatever you clicked — a working-tree file, a staged file, or a file inside a commit.
 
 ## Install
 
 ```bash
-dsh plugin --profile web add github:Weidows/dsh-git
-```
-
-Or from a checkout:
-
-```bash
 dsh plugin --profile web add C:/path/to/dsh-git
+# or straight from git
+dsh plugin --profile web add https://github.com/Weidows/dsh-git
 ```
 
-Restart the app afterwards. Host-half code is loaded at boot, so editing the
-plugin's files needs a restart to take effect.
+Restart the Harness after installing: client plugins are loaded at boot.
 
-## How it works
+## dsh-better-sidebar
 
-The plugin ships two halves, exactly like any other DSH bundle:
+[dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) is supported and preferred when installed. dsh-git registers its panel through `ctx.betterSidebar.registerTab` (order 25, single instance) and skips its own native right-sidebar tab, so you never end up with two Git tabs. Without better-sidebar it falls back to a plain right-sidebar tab.
 
-| Half | File | Role |
-| --- | --- | --- |
-| host | `lib/index.js` | serves `POST /plugins/dsh-git/api/*` on the profile's own HTTP surface |
-| client | `lib/client.js` | mounts the three seats into `slots` |
-
-### Host half
-
-```
-POST /plugins/dsh-git/api/state   { cwd }              -> repo, branch, ahead/behind, changed files
-POST /plugins/dsh-git/api/diff    { cwd, mode, path? } -> unified patch text (mode: worktree | staged)
-POST /plugins/dsh-git/api/log     { cwd, limit }       -> commit list
-POST /plugins/dsh-git/api/commit  { cwd, hash }        -> one commit: metadata + files + patch
-```
-
-Everything is **read-only**: nothing here stages, commits, pushes, or checks out.
-Requests are admitted through `connection.requestRejection` like the rest of the
-profile's routes; other requests get `403`.
-
-Git is invoked through `execFile('git', args)` with an explicit `cwd` — no shell
-is ever involved, so a path containing spaces or quotes cannot turn into an
-argument. The inspected directory must be absolute and exist; the repo root is
-resolved with `git rev-parse --show-toplevel`, so a session opened in a
-subdirectory still shows the whole repository.
-
-Output caps: 24 MB per git process, 1.2 MB of patch text per response, 40 commits
-per history page (max 200).
-
-### Client half
+The panel can also be opened by other plugins:
 
 ```js
-export const inject = ['slots', 'sessions', 'locale']
-
-ctx.slots.inject('conversation.input.dock', ...)                 // the chip
-ctx.slots.inject('conversation.session.header.utilities', ...)   // the header button
-ctx.slots.inject('sidebar.right.pane.tab', ...)                  // the tab body
-ctx.slots.inject('sidebar.right.pane.tab.title', ...)            // the tab chip
-ctx.sidebarRightTabs.register({ id: 'dsh-git', kind: 'dsh-git', priority: 'extension' })
+ctx.betterSidebar.openTab({ type: "dsh-git", title: "Git", meta: { cwd } }, { sessionId })
 ```
 
-The session's working directory is read from `sessions.list` with
-`useSyncExternalStore`, so switching sessions re-points the chip at that
-session's repository. One shared store fetches repo state once and hands it to
-all three seats; the tab additionally refetches on demand and when it opens.
+## Host API
 
-## Configuration
+All traffic goes through `POST /plugins/dsh-git/api/<method>` with a JSON body and returns `{ ok: true, data }` or `{ ok: false, error: { message } }`. Requests are rejected with 403 unless they come from the Harness connection. Every git call is `execFile("git", argv)` — never a shell — with a validated working directory, pathspecs after `--`, and 24 MB output caps.
 
-None. If a session's working directory is not inside a git repository, all three
-seats render nothing at all rather than an empty frame.
+| method | body | returns |
+| --- | --- | --- |
+| `state` | { cwd } | repo name, branch, ahead/behind, file list with per-file index/worktree state |
+| `diff` | { cwd, mode: "worktree" or "staged", path? } | unified patch of the working tree, the index, or one file |
+| `log` | { cwd, ref?, search?, limit? } | commits (hash, short, subject, author, date, refs) |
+| `commit` | { cwd, hash } | commit meta, changed files with +/- counts, patch |
+| `commit-files` | { cwd, hash } | files of a commit |
+| `commit-file` | { cwd, hash, path } | patch of one file inside a commit |
+| `stage` / `unstage` | { cwd, paths: [] } | fresh state |
+| `discard` | { cwd, paths: [] } | fresh state (tracked files only) |
+| `commit-create` | { cwd, message, all? } | fresh state |
+| `branches` | { cwd } | local and remote branches |
+| `checkout` | { cwd, branch } | fresh state |
+| `reset` | { cwd, hash, mode: "soft", "mixed" or "hard" } | fresh state |
+| `revert` | { cwd, hash } | fresh state |
+| `suggest` | { cwd, sessionId?, language? } | AI commit message derived from the staged/working diff |
 
-## Notes and limits
+## Safety
 
-- Uncommitted state only: the changes list is `git status` + `git diff`
-  (`--staged` or worktree), not a graph view.
-- Renames are shown as `old → new` when git reports them as renames.
-- Untracked files appear in the list but have no patch to show.
-- Binaries and generated files are listed; their diff is whatever git prints.
-- No write operations by design. Staging, committing, and pushing belong to the
-  terminal, not to a panel that can be clicked by accident.
+- `reset --hard`, `revert` and `discard` are destructive; they are only reachable from explicit clicks in the panel.
+- Pathspecs and branch names are validated (no leading `-`, no whitespace or `..` in branches) and passed after `--`.
+- The plugin never runs a shell, never prompts for credentials (`GIT_TERMINAL_PROMPT=0`), and never reads anything outside the session working directory.
 
 ## Development
 
-```bash
-node --check lib/index.js
-node --check lib/client.js
+```
+lib/index.js       host half: the /plugins/dsh-git/api route and all git + LLM work
+lib/client.js      browser half: slots, chip, header button, panel, native + better-sidebar tabs
+cordis.patch.yml   bundle patch that inserts the plugin into the profile
 ```
 
-Both halves are dependency-free ES modules — no build step, no bundler, no
-runtime dependencies.
+The client half is a plain Harness client plugin (`window.__ModuleLoader__.load`) that registers React components into slots:
+
+- `conversation.input.right` — the branch chip
+- `conversation.session.header.utilities` — the header button
+- `sidebar.right.pane.tab` — the native tab body (only when better-sidebar is absent)
 
 ## License
 

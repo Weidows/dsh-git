@@ -1,7 +1,7 @@
 {
   "name": "dsh-git",
-  "version": "0.1.0",
-  "description": "Git for DeepSeek Harness: a repo/branch chip under the composer, a header Git button, and a right-sidebar tab with the current project's changes and commit history.",
+  "version": "0.2.0",
+  "description": "Git for DeepSeek Harness: a repo/branch chip in the composer, a header Git button, and a split-screen Git panel (changes + staging + commit, history, and diffs) in the sidebar.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -21,7 +21,9 @@
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
-    "git"
+    "git",
+    "diff",
+    "commit"
   ],
   "license": "MIT",
   "dsh": {
@@ -37,6 +39,14 @@
         "@deepseek-ai/dsh-client-ui-conversation",
         "@deepseek-ai/dsh-client-ui-sidebar-right"
       ]
+    }
+  },
+  "peerDependencies": {
+    "dsh-better-sidebar": ">=0.28.0"
+  },
+  "peerDependenciesMeta": {
+    "dsh-better-sidebar": {
+      "optional": true
     }
   },
   "engines": {
