@@ -1,6 +1,6 @@
 {
   "name": "dsh-git",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Git for DeepSeek Harness: a repo/branch chip in the composer, a header Git button, and a split-screen Git panel (changes + staging + commit, history, and diffs) in the sidebar.",
   "type": "module",
   "main": "lib/index.js",
