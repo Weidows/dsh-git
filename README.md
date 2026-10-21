@@ -27,8 +27,10 @@ It shows the repository name, the current branch, ahead/behind markers, and a di
 ```
 
 - **Top-left**: staged and unstaged files, laid out as the repository's own folder tree (collapsible folders with file counts, not a flat list). Stage/unstage a single file or everything, discard a tracked change behind an inline confirm, write a commit message, and generate one with AI (uses the Harness default model, and reports a clear error when no model is configured). Ctrl/Cmd+Enter commits.
-- **Top-right**: commit history with a branch switcher, a text filter, branch lanes drawn down the left edge, expandable rows that list the files of the commit, and a right-click menu (copy hash, `reset --soft/mixed/hard`, `revert`).
+- **Top-right**: commit history with a branch switcher, a text filter, branch lanes drawn down the left edge, expandable rows that list the files of the commit, and a right-click menu (copy hash, `reset --soft/mixed/hard`, `revert`). Each row leads with GitLens-style ref chips — a tick for the checked-out HEAD, a branch glyph for local branches, a globe for remote-tracking refs, a tag glyph for tags — sitting above the subject, with `short hash · author · age` underneath.
 - **Bottom**: the diff of whatever you clicked — a working-tree file, a staged file, or one specific file inside a commit (only that file's patch, never the whole commit).
+
+**Narrow screens.** Below 720px the two-column grid collapses into one stacked column (changes, history, diff), panes keep their own scroll with sensible max heights, tap targets grow, the short hash hides, the filter box moves to its own row, and per-file actions stay visible on touch devices where there is no hover.
 
 ## Install
 
