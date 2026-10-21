@@ -26,9 +26,9 @@ It shows the repository name, the current branch, ahead/behind markers, and a di
 +--------------------------------------------+
 ```
 
-- **Top-left**: staged and unstaged files. Stage/unstage a single file or everything, discard tracked changes, write a commit message, and generate one with AI (uses the Harness default model, and reports a clear error when no model is configured). Ctrl/Cmd+Enter commits.
-- **Top-right**: commit history with a text filter, expandable rows that list the files of the commit, and a right-click menu (copy hash, `reset --soft/mixed/hard`, `revert`).
-- **Bottom**: the diff of whatever you clicked — a working-tree file, a staged file, or a file inside a commit.
+- **Top-left**: staged and unstaged files, laid out as the repository's own folder tree (collapsible folders with file counts, not a flat list). Stage/unstage a single file or everything, discard a tracked change behind an inline confirm, write a commit message, and generate one with AI (uses the Harness default model, and reports a clear error when no model is configured). Ctrl/Cmd+Enter commits.
+- **Top-right**: commit history with a branch switcher, a text filter, branch lanes drawn down the left edge, expandable rows that list the files of the commit, and a right-click menu (copy hash, `reset --soft/mixed/hard`, `revert`).
+- **Bottom**: the diff of whatever you clicked — a working-tree file, a staged file, or one specific file inside a commit (only that file's patch, never the whole commit).
 
 ## Install
 
@@ -43,6 +43,8 @@ Restart the Harness after installing: client plugins are loaded at boot.
 ## dsh-better-sidebar
 
 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) is supported and preferred when installed. dsh-git registers its panel through `ctx.betterSidebar.registerTab` (order 25, single instance) and skips its own native right-sidebar tab, so you never end up with two Git tabs. Without better-sidebar it falls back to a plain right-sidebar tab.
+
+better-sidebar mirrors native tab kinds into its own registry, so registering a native kind and a better-sidebar tab under the same id makes its bridge throw `tab kind "dsh-git" is already registered`. dsh-git therefore never registers the native kind while the service is present, drops it if the service shows up later, and retries under a scoped id if the descriptor is still refused.
 
 The panel can also be opened by other plugins:
 
