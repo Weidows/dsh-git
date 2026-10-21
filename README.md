@@ -44,12 +44,12 @@ Restart the Harness after installing: client plugins are loaded at boot.
 
 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) is supported and preferred when installed. dsh-git registers its panel through `ctx.betterSidebar.registerTab` (order 25, single instance) and skips its own native right-sidebar tab, so you never end up with two Git tabs. Without better-sidebar it falls back to a plain right-sidebar tab.
 
-better-sidebar mirrors native tab kinds into its own registry, so registering a native kind and a better-sidebar tab under the same id makes its bridge throw `tab kind "dsh-git" is already registered`. dsh-git therefore never registers the native kind while the service is present, drops it if the service shows up later, and retries under a scoped id if the descriptor is still refused.
+better-sidebar mirrors native tab kinds into its own registry, so registering a native kind and a better-sidebar tab under the same id makes its bridge throw `tab kind "..." is already registered`. The two registrations therefore use separate, author-tagged ids — `dsh-git-by-weidows` (better-sidebar tab) and `dsh-git-native-by-weidows` (native kind) — and the native kind is never registered while the service is present. Both carry a full description for the new-tab list: repo and branch status, changes and staging, commits, history and diffs.
 
 The panel can also be opened by other plugins:
 
 ```js
-ctx.betterSidebar.openTab({ type: "dsh-git", title: "Git", meta: { cwd } }, { sessionId })
+ctx.betterSidebar.openTab({ type: "dsh-git-by-weidows", title: "Git by@Weidows", meta: { cwd } }, { sessionId })
 ```
 
 ## Host API
