@@ -1,5 +1,5 @@
 {
-  "name": "dsh-git",
+  "name": "@weidows/dsh-git",
   "version": "0.7.0",
   "description": "Git for DeepSeek Harness: a repo/branch chip in the composer, a header Git button, and a split-screen Git panel (changes + staging + commit, history, and diffs) in the sidebar.",
   "type": "module",
@@ -26,6 +26,14 @@
     "commit"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Weidows/dsh-git.git"
+  },
+  "homepage": "https://dsh-plugin.org/plugins/weidows/dsh-git",
+  "bugs": {
+    "url": "https://github.com/Weidows/dsh-git/issues"
+  },
   "dsh": {
     "manifestVersion": 1,
     "bundle": {

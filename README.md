@@ -1,5 +1,7 @@
 # dsh-git
 
+[![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/weidows/dsh-git)
+
 Git in the [DeepSeek Harness](https://github.com/deepseek-ai) composer and sidebar: a repo/branch chip, a header button, and a split Git panel with staging, commit, history and diffs.
 
 ## What it adds
@@ -35,9 +37,11 @@ It shows the repository name, the current branch, ahead/behind markers, and a di
 ## Install
 
 ```bash
-dsh plugin --profile web add C:/path/to/dsh-git
-# or straight from git
-dsh plugin --profile web add https://github.com/Weidows/dsh-git
+# from npm (scoped: the unscoped name dsh-git belongs to another author)
+dsh plugin --profile web add @weidows/dsh-git
+
+# from source
+dsh plugin --profile web add github:Weidows/dsh-git
 ```
 
 Restart the Harness after installing: client plugins are loaded at boot.
